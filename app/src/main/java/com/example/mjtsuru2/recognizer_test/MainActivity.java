@@ -1,39 +1,72 @@
 package com.example.mjtsuru2.recognizer_test;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import java.util.ArrayList;
 
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.os.Bundle;
+import android.speech.RecognizerIntent;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
+    private static final int REQUEST_CODE = 0;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Button button = (Button) findViewById(R.id.button);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+
+                    Intent intent = new Intent(
+                            RecognizerIntent.ACTION_RECOGNIZE_SPEECH); // ACTION_WEB_SEARCH
+                    intent.putExtra(
+                            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                    intent.putExtra(
+                            RecognizerIntent.EXTRA_PROMPT,
+                            "VoiceRecognitionTest");
+
+
+                    startActivityForResult(intent, REQUEST_CODE);
+                } catch (ActivityNotFoundException e) {
+
+                    Toast.makeText(MainActivity.this,
+                            "ActivityNotFoundException", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
+            String resultsString = "";
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+
+            ArrayList<String> results = data.getStringArrayListExtra(
+                    RecognizerIntent.EXTRA_RESULTS);
+
+            for (int i = 0; i< results.size(); i++) {
+
+                resultsString += results.get(i);
+            }
+
+
+            Toast.makeText(this, resultsString, Toast.LENGTH_LONG).show();
         }
 
-        return super.onOptionsItemSelected(item);
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }
